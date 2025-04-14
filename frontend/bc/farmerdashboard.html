@@ -1,0 +1,312 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<title>Farmer Dashboard - Bovine Care</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="stylesheet" href="assets/css/main.css" />
+</head>
+
+<body class="is-preload">
+	<div id="page-wrapper">
+
+		<!-- Header -->
+		<div id="header"
+			style="background-image: url('images/cattlesun.jpg'); background-size: cover; background-position: center;">
+			<div class="logo-container" style="display: flex; align-items: center; justify-content: center;">
+				<img src="images/logo.png" alt="Bovine Care Logo" style="height: 120px; margin-right: 0px;">
+				<h1 style="text-align: center; margin-top: 40px; font-size: 120%; color: white;">
+					<a href="index1.html" id="logo" style="color: white;">Bovine Care</a>
+				</h1>
+			</div>
+
+			<!-- Nav -->
+			<nav id="nav">
+				<ul>
+					<li><a href="index1.html">Home</a></li>
+					<li class="current"><a href="farmerdashboard.html">Farmer Dashboard</a></li>
+					<li><a href="about.html">About</a></li>
+				</ul>
+			</nav>
+		</div>
+
+		<!-- Main -->
+		<section class="wrapper style1">
+			<div class="container">
+				<div class="row gtr-200">
+					<div class="col-8 col-12-narrower">
+						<div id="content">
+							<!-- Content -->
+							<article>
+								<header>
+									<h2>Welcome to Your Dashboard</h2>
+									<p>Upload images and detect diseases, and connect with your farming community and
+										experts.</p>
+								</header>
+
+								<span class="image featured"><img src="images/phonewoman.jpg" alt="" /></span>
+
+								<p>Use the tools provided here to monitor your cattle’s health and engage with the
+									community.</p>
+
+
+								<!-- Disease Detection Upload Section -->
+								<section class="disease-detection-section"
+									style="margin-top: 30px; margin-bottom: 30px;">
+									<header>
+										<h3>Disease Detection</h3>
+										<p>Upload images or videos of your cattle to detect potential health issues.</p>
+									</header>
+
+									<div class="upload-container"
+										style="border: 2px dashed #ccc; border-radius: 10px; padding: 20px; text-align: center; margin-bottom: 20px;">
+										<div id="drop-area"
+											style="min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+											<img src="images/upload.png" alt="Upload"
+												style="max-width: 64px; margin-bottom: 15px;">
+											<p>Drag and drop your files here or click to browse</p>
+											<p class="small-text" style="font-size: 0.8em; color: #888;">Supported
+												formats: JPG, PNG, MP4, MOV (Max size: 50MB)</p>
+
+											<input type="file" id="fileInput" name="fileInput" accept="image/*,video/*"
+												style="display: none;" multiple>
+											<button onclick="document.getElementById('fileInput').click();"
+												class="button" style="margin-top: 15px;">Browse Files</button>
+										</div>
+									</div>
+
+									<div id="preview-area" style="display: none; margin-top: 20px;">
+										<h4>Selected Files</h4>
+										<div id="file-preview-container"
+											style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+									</div>
+
+									<!-- Progress Indicator -->
+									<div id="progress-container" style="display: none; margin-top: 20px;">
+										<h4>Analysis Progress</h4>
+										<div style="background: #ddd; border-radius: 5px; height: 10px; width: 100%;">
+											<div id="progress-bar"
+												style="height: 10px; width: 0%; background: #4CAF50; border-radius: 5px;">
+											</div>
+										</div>
+										<p id="progress-text"
+											style="text-align: center; margin-top: 5px; font-size: 0.9em;">Uploading...
+										</p>
+									</div>
+
+									<div class="action-buttons"
+										style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
+										<button id="analyze-btn" class="button primary" disabled>Analyze for
+											Diseases</button>
+										<button id="clear-btn" class="button alt" disabled>Clear Selection</button>
+									</div>
+
+									<div id="analysis-results" style="margin-top: 30px; display: none;">
+										<h4>Analysis Results</h4>
+										<div class="results-container"
+											style="border: 1px solid #ddd; border-radius: 5px; padding: 15px; background-color: #f9f9f9;">
+											<p>Your results will appear here after analysis.</p>
+										</div>
+									</div>
+								</section>
+
+								<script>
+									document.addEventListener('DOMContentLoaded', function () {
+										const dropArea = document.getElementById('drop-area');
+										const fileInput = document.getElementById('fileInput');
+										const previewArea = document.getElementById('preview-area');
+										const filePreviewContainer = document.getElementById('file-preview-container');
+										const analyzeBtn = document.getElementById('analyze-btn');
+										const clearBtn = document.getElementById('clear-btn');
+										const analysisResults = document.getElementById('analysis-results');
+										const progressContainer = document.getElementById('progress-container');
+										const progressBar = document.getElementById('progress-bar');
+										const progressText = document.getElementById('progress-text');
+
+										const maxSize = 50 * 1024 * 1024; // 50MB
+
+										['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+											dropArea.addEventListener(eventName, preventDefaults, false);
+										});
+
+										function preventDefaults(e) {
+											e.preventDefault();
+											e.stopPropagation();
+										}
+
+										['dragenter', 'dragover'].forEach(eventName => {
+											dropArea.addEventListener(eventName, () => dropArea.style.borderColor = '#3498db', false);
+										});
+
+										['dragleave', 'drop'].forEach(eventName => {
+											dropArea.addEventListener(eventName, () => dropArea.style.borderColor = '#ccc', false);
+										});
+
+										dropArea.addEventListener('drop', handleDrop, false);
+										fileInput.addEventListener('change', function () {
+											handleFiles(this.files);
+										});
+
+										function handleDrop(e) {
+											handleFiles(e.dataTransfer.files);
+										}
+
+										function handleFiles(files) {
+											filePreviewContainer.innerHTML = '';
+											previewArea.style.display = 'block';
+											analyzeBtn.disabled = false;
+											clearBtn.disabled = false;
+
+											[...files].forEach(file => {
+												if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+													alert("Unsupported file format.");
+													return;
+												}
+
+												if (file.size > maxSize) {
+													alert("File too large. Maximum size is 50MB.");
+													return;
+												}
+
+												const wrapper = document.createElement('div');
+												wrapper.className = 'file-preview';
+
+												if (file.type.startsWith('image/')) {
+													const img = document.createElement('img');
+													img.style.maxWidth = '150px';
+													img.style.borderRadius = '5px';
+													const reader = new FileReader();
+													reader.onload = e => img.src = e.target.result;
+													reader.readAsDataURL(file);
+													wrapper.appendChild(img);
+												} else {
+													const video = document.createElement('video');
+													video.style.maxWidth = '150px';
+													video.controls = true;
+													const source = document.createElement('source');
+													source.src = URL.createObjectURL(file);
+													source.type = file.type;
+													video.appendChild(source);
+													wrapper.appendChild(video);
+												}
+
+												filePreviewContainer.appendChild(wrapper);
+											});
+										}
+
+										analyzeBtn.addEventListener('click', async function () {
+											analyzeBtn.disabled = true;
+											progressContainer.style.display = 'block';
+											progressText.textContent = "Uploading...";
+											progressBar.style.width = "0%";
+
+											const formData = new FormData();
+											[...fileInput.files].forEach(file => formData.append("files", file));
+
+											try {
+												for (let i = 0; i <= 100; i += 20) {
+													progressBar.style.width = i + "%";
+													await new Promise(resolve => setTimeout(resolve, 500));
+												}
+
+												progressText.textContent = "Analyzing...";
+
+												const response = await fetch("YOUR_BACKEND_API_URL", {
+													method: "POST",
+													body: formData
+												});
+
+												const result = await response.json();
+												progressContainer.style.display = 'none';
+												analysisResults.style.display = 'block';
+												document.querySelector('.results-container').innerHTML = `<p>${result.message}</p>`;
+
+											} catch (error) {
+												alert("Error analyzing files. Please try again.");
+											}
+
+											analyzeBtn.disabled = false;
+										});
+
+										clearBtn.addEventListener('click', function () {
+											fileInput.value = '';
+											filePreviewContainer.innerHTML = '';
+											previewArea.style.display = 'none';
+											analysisResults.style.display = 'none';
+											analyzeBtn.disabled = true;
+											clearBtn.disabled = true;
+											progressContainer.style.display = 'none';
+										});
+									});
+								</script>
+
+
+							</article>
+						</div>
+					</div>
+					<div class="col-4 col-12-narrower">
+						<div id="sidebar">
+							<!-- Sidebar -->
+							<section>
+								<h3>Login to the Bovine Care Community community chats</h3>
+								<p>Login to your farmer community chat to connect with your farmer community.</p>
+
+							</section>
+							<!-- Chatbox Login Button -->
+							<section style="text-align: center; margin-top: 20px;">
+								<a href="http://localhost:8080" class="button">Login to Bovine Care Community</a>
+							</section>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Footer -->
+		<div id="footer">
+			<div class="container">
+				<div class="row">
+					<section class="col-6 col-12-narrower" style="margin: 0 auto;">
+						<h3>Get In Touch</h3>
+						<form>
+							<div class="row gtr-50">
+								<div class="col-6 col-12-mobilep">
+									<input type="text" name="name" id="name" placeholder="Name" />
+								</div>
+								<div class="col-6 col-12-mobilep">
+									<input type="email" name="email" id="email" placeholder="Email" />
+								</div>
+								<div class="col-12">
+									<textarea name="message" id="message" placeholder="Message" rows="5"></textarea>
+								</div>
+								<div class="col-12">
+									<ul class="actions">
+										<li><input type="submit" class="button alt" value="Send Message" /></li>
+									</ul>
+								</div>
+							</div>
+						</form>
+					</section>
+				</div>
+			</div>
+			<!-- Copyright -->
+			<div class="copyright">
+				<ul class="menu">
+					<li>&copy; Bovine Care. All rights reserved</li>
+					<li>2024-2025</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- Scripts -->
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.dropotron.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+
+</body>
+
+</html>
